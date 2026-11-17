@@ -28,3 +28,10 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Project rules
+
+- Weather data comes straight from Open-Meteo (geocoding + forecast) in the browser via `src/lib/weather/api.ts`; no API key or backend, and never mock data.
+- The selected city lives in the `/` URL search params (`lat`, `lon`, `nome`, `regiao`, `pais`) so it survives refresh and can be shared; missing params fall back to `DEFAULT_PLACE`.
+- Search history and favorites are per-browser in localStorage (`src/hooks/use-saved-places.ts`), read in `useEffect` to avoid hydration mismatches.
+- The UI is a single "sky" theme: light text on dynamic gradient backgrounds defined as `--sky-*` tokens in `src/styles.css`, chosen from the WMO weather code in `src/lib/weather/conditions.ts`.
