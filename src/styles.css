@@ -79,6 +79,12 @@
   --color-storm: var(--storm);
   --color-warm: var(--warm);
   --color-cool: var(--cool);
+  --color-aqi-good: var(--aqi-good);
+  --color-aqi-moderate: var(--aqi-moderate);
+  --color-aqi-sensitive: var(--aqi-sensitive);
+  --color-aqi-bad: var(--aqi-bad);
+  --color-aqi-very-bad: var(--aqi-very-bad);
+  --color-aqi-dangerous: var(--aqi-dangerous);
   --shadow-glass: var(--shadow-glass-value);
 }
 
@@ -126,6 +132,12 @@
   --storm: oklch(0.88 0.14 95);
   --warm: oklch(0.8 0.15 55);
   --cool: oklch(0.82 0.1 225);
+  --aqi-good: oklch(0.8 0.14 155);
+  --aqi-moderate: oklch(0.87 0.15 95);
+  --aqi-sensitive: oklch(0.82 0.16 60);
+  --aqi-bad: oklch(0.7 0.19 25);
+  --aqi-very-bad: oklch(0.62 0.18 320);
+  --aqi-dangerous: oklch(0.55 0.19 15);
   --gradient-temp: linear-gradient(90deg, var(--cool), var(--sun), var(--warm));
   --shadow-glass-value: 0 20px 50px -24px oklch(0.15 0.05 260 / 0.55);
 

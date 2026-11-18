@@ -1,8 +1,9 @@
 import { MapPin, RefreshCw, Star } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { useUnits } from "@/hooks/use-units";
 import { describeWeather } from "@/lib/weather/conditions";
-import { formatLocalTime, formatTemp } from "@/lib/weather/format";
+import { formatLocalTime } from "@/lib/weather/format";
 import { placeSubtitle } from "@/lib/weather/location";
 import type { Forecast, Place } from "@/lib/weather/types";
 import { cn } from "@/lib/utils";
@@ -28,6 +29,7 @@ export function CurrentWeather({
 }) {
   const { current } = forecast;
   const today = forecast.daily[0];
+  const { formatTemp, tempSuffix } = useUnits();
   const condition = describeWeather(current.weatherCode, current.isDay);
   const fetchedTime = new Date(fetchedAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
@@ -71,7 +73,7 @@ export function CurrentWeather({
         <div>
           <p className="font-display text-[6.5rem] font-extrabold leading-[0.85] tracking-tighter sm:text-[8.5rem]">
             {formatTemp(current.temperature)}
-            <span className="sr-only"> Celsius</span>
+            <span className="sr-only"> {tempSuffix}</span>
           </p>
           <p className="mt-3 text-xl font-semibold">{condition.label}</p>
           {today ? (

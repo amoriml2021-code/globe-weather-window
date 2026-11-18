@@ -1,7 +1,8 @@
 import { ArrowDown, ArrowUp, Droplets, Navigation, Thermometer, Wind } from "lucide-react";
 import type { ReactNode } from "react";
 
-import { compassDirection, formatTemp } from "@/lib/weather/format";
+import { useUnits } from "@/hooks/use-units";
+import { compassDirection } from "@/lib/weather/format";
 import type { Forecast } from "@/lib/weather/types";
 
 function StatCard({ icon, label, children, hint }: { icon: ReactNode; label: string; children: ReactNode; hint?: ReactNode }) {
@@ -20,14 +21,22 @@ function StatCard({ icon, label, children, hint }: { icon: ReactNode; label: str
 export function StatCards({ forecast }: { forecast: Forecast }) {
   const { current } = forecast;
   const today = forecast.daily[0];
-  const feelsDiff = Math.round(current.apparentTemperature - current.temperature);
+  const { formatTemp, formatSpeed, formatTempDelta, speedSuffix } = useUnits();
+  const feelsDiff = current.apparentTemperature - current.temperature;
+  const feelsGap = formatTempDelta(feelsDiff);
 
   return (
     <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
       <StatCard
         icon={<Thermometer className="size-4" aria-hidden />}
         label="Sensação"
-        hint={feelsDiff === 0 ? "Igual à temperatura real" : feelsDiff > 0 ? `${feelsDiff}° mais quente` : `${Math.abs(feelsDiff)}° mais frio`}
+        hint={
+          feelsGap === "0°"
+            ? "Igual à temperatura real"
+            : feelsDiff > 0
+              ? `${feelsGap} mais quente`
+              : `${feelsGap} mais frio`
+        }
       >
         {formatTemp(current.apparentTemperature)}
       </StatCard>
@@ -58,8 +67,8 @@ export function StatCards({ forecast }: { forecast: Forecast }) {
           </span>
         }
       >
-        {Math.round(current.windSpeed)}
-        <span className="ml-1 text-base font-medium text-muted-foreground">km/h</span>
+        {formatSpeed(current.windSpeed)}
+        <span className="ml-1 text-base font-medium text-muted-foreground">{speedSuffix}</span>
       </StatCard>
 
       <StatCard icon={<Thermometer className="size-4" aria-hidden />} label="Máx. / Mín." hint="Hoje">

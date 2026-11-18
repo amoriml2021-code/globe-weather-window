@@ -1,12 +1,14 @@
 import { Droplet } from "lucide-react";
 
+import { useUnits } from "@/hooks/use-units";
 import { describeWeather } from "@/lib/weather/conditions";
-import { dayLabel, formatTemp, shortDate } from "@/lib/weather/format";
+import { dayLabel, shortDate } from "@/lib/weather/format";
 import type { Forecast } from "@/lib/weather/types";
 
 import { WeatherIcon } from "./WeatherIcon";
 
 export function DailyForecast({ forecast }: { forecast: Forecast }) {
+  const { formatTemp } = useUnits();
   const days = forecast.daily;
   const weekMin = Math.min(...days.map((d) => d.min));
   const weekMax = Math.max(...days.map((d) => d.max));

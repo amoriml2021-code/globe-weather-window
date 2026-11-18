@@ -1,11 +1,13 @@
 import { Droplet } from "lucide-react";
 
-import { formatLocalTime, formatTemp, upcomingHours } from "@/lib/weather/format";
+import { useUnits } from "@/hooks/use-units";
+import { formatLocalTime, upcomingHours } from "@/lib/weather/format";
 import type { Forecast } from "@/lib/weather/types";
 
 import { WeatherIcon } from "./WeatherIcon";
 
 export function HourlyForecast({ forecast }: { forecast: Forecast }) {
+  const { formatTemp } = useUnits();
   const hours = upcomingHours(forecast.hourly, forecast.current.time, 24);
   if (hours.length === 0) return null;
 

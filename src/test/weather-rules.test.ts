@@ -83,3 +83,147 @@ describe("current location", () => {
     expect(geolocationErrorMessage(1)).toContain("Permissão de localização negada");
   });
 });
+
+describe("unit system", () => {
+  it("converts Celsius to Fahrenheit", async () => {
+    const { convertTemp, formatUnitTemp } = await import("@/lib/weather/units");
+    expect(convertTemp(25, "imperial")).toBe(77);
+    expect(formatUnitTemp(25, "imperial")).toBe("77°");
+    expect(formatUnitTemp(25, "metric")).toBe("25°");
+  });
+
+  it("scales a temperature difference without the +32 offset", async () => {
+    const { convertTempDelta, formatUnitTempDelta } = await import("@/lib/weather/units");
+    expect(convertTempDelta(10, "imperial")).toBe(18);
+    expect(formatUnitTempDelta(-4, "imperial")).toBe("7°");
+  });
+
+  it("converts km/h to mph and labels both", async () => {
+    const { convertSpeed, speedSuffix, tempSuffix } = await import("@/lib/weather/units");
+    expect(convertSpeed(10, "imperial")).toBeCloseTo(6.21, 2);
+    expect(speedSuffix("metric")).toBe("km/h");
+    expect(speedSuffix("imperial")).toBe("mph");
+    expect(tempSuffix("imperial")).toBe("°F");
+  });
+
+  it("keeps a missing value as a dash", async () => {
+    const { formatUnitTemp } = await import("@/lib/weather/units");
+    expect(formatUnitTemp(Number.NaN, "imperial")).toBe("–");
+  });
+});
+
+describe("sun arc", () => {
+  const sunrise = "2026-11-18T05:12";
+  const sunset = "2026-11-18T18:30";
+
+  it("places the sun along the arc during the day", async () => {
+    const { computeSunPhase } = await import("@/lib/weather/sun");
+    const phase = computeSunPhase("2026-11-18T12:00", sunrise, sunset);
+    expect(phase?.phase).toBe("daytime");
+    expect(phase?.progress).toBeCloseTo(408 / 798, 4);
+    expect(phase?.daylightMinutes).toBe(798);
+    expect(phase?.minutesUntilSunset).toBe(390);
+  });
+
+  it("keeps the sun at the horizon before sunrise and after sunset", async () => {
+    const { computeSunPhase } = await import("@/lib/weather/sun");
+    expect(computeSunPhase("2026-11-18T04:00", sunrise, sunset)).toMatchObject({
+      phase: "before-sunrise",
+      progress: 0,
+      minutesUntilSunrise: 72,
+    });
+    expect(computeSunPhase("2026-11-18T19:00", sunrise, sunset)).toMatchObject({
+      phase: "after-sunset",
+      progress: 1,
+    });
+  });
+
+  it("gives up when the times are missing", async () => {
+    const { computeSunPhase } = await import("@/lib/weather/sun");
+    expect(computeSunPhase("2026-11-18T12:00", null, sunset)).toBeNull();
+  });
+
+  it("writes daylight as hours and minutes", async () => {
+    const { formatDuration, formatRemaining } = await import("@/lib/weather/sun");
+    expect(formatDuration(798)).toBe("13 h 18 min");
+    expect(formatDuration(120)).toBe("2 h");
+    expect(formatRemaining(8)).toBe("8 min");
+  });
+});
+
+describe("UV index bands", () => {
+  it("labels the WHO bands", async () => {
+    const { classifyUv } = await import("@/lib/weather/sun");
+    expect(classifyUv(2)?.label).toBe("Baixo");
+    expect(classifyUv(5)?.tone).toBe("moderate");
+    expect(classifyUv(7)?.label).toBe("Alto");
+    expect(classifyUv(9)?.label).toBe("Muito alto");
+    expect(classifyUv(12)?.label).toBe("Extremo");
+    expect(classifyUv(null)).toBeNull();
+  });
+});
+
+describe("air quality levels", () => {
+  it("classifies the US AQI scale", async () => {
+    const { classifyAqi } = await import("@/lib/weather/air");
+    expect(classifyAqi(40)).toMatchObject({ label: "Boa", tone: "good" });
+    expect(classifyAqi(80)?.label).toBe("Moderada");
+    expect(classifyAqi(120)?.tone).toBe("sensitive");
+    expect(classifyAqi(180)?.label).toBe("Ruim");
+    expect(classifyAqi(250)?.label).toBe("Muito ruim");
+    expect(classifyAqi(400)?.label).toBe("Perigosa");
+    expect(classifyAqi(null)).toBeNull();
+  });
+});
+
+describe("daily recommendations", () => {
+  const base = {
+    temperature: 24,
+    apparentTemperature: 24,
+    humidity: 55,
+    windSpeed: 10,
+    precipitationProbability: 10,
+    uvIndex: 1,
+    uvIndexMax: 2,
+    aqi: 30,
+    isDay: true,
+  };
+
+  it("says nothing is wrong on a calm day", async () => {
+    const { buildAdvice } = await import("@/lib/weather/advice");
+    expect(buildAdvice(base)).toEqual([
+      { id: "mild", title: "Nada de alerta", text: expect.any(String) },
+    ]);
+  });
+
+  it("warns about rain with the real percentage", async () => {
+    const { buildAdvice } = await import("@/lib/weather/advice");
+    const advice = buildAdvice({ ...base, precipitationProbability: 80 });
+    expect(advice.map((a) => a.id)).toContain("rain");
+    expect(advice.find((a) => a.id === "rain")?.text).toContain("80%");
+  });
+
+  it("only warns about the sun while it is up", async () => {
+    const { buildAdvice } = await import("@/lib/weather/advice");
+    expect(buildAdvice({ ...base, uvIndexMax: 9 }).map((a) => a.id)).toContain("uv-high");
+    expect(buildAdvice({ ...base, uvIndexMax: 9, isDay: false }).map((a) => a.id)).not.toContain("uv-high");
+  });
+
+  it("puts the worst warning first and shows at most four", async () => {
+    const { buildAdvice, MAX_ADVICE } = await import("@/lib/weather/advice");
+    const advice = buildAdvice({
+      ...base,
+      temperature: 35,
+      apparentTemperature: 38,
+      humidity: 20,
+      windSpeed: 50,
+      precipitationProbability: 90,
+      uvIndex: 12,
+      uvIndexMax: 12,
+      aqi: 200,
+    });
+    expect(advice).toHaveLength(MAX_ADVICE);
+    expect(advice[0]?.id).toBe("air-bad");
+    expect(advice.map((a) => a.id)).toEqual(["air-bad", "uv-extreme", "rain", "heat"]);
+  });
+});

@@ -16,6 +16,7 @@ export type CurrentConditions = {
   windDirection: number;
   weatherCode: number;
   isDay: boolean;
+  uvIndex: number | null;
 };
 
 export type HourPoint = {
@@ -32,6 +33,9 @@ export type DayPoint = {
   max: number;
   min: number;
   precipitationProbability: number | null;
+  sunrise: string | null;
+  sunset: string | null;
+  uvIndexMax: number | null;
 };
 
 export type Forecast = {

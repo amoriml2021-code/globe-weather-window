@@ -97,6 +97,7 @@ type RawForecast = {
     weather_code: number;
     wind_speed_10m: number;
     wind_direction_10m: number;
+    uv_index?: number | null;
   };
   hourly: {
     time: string[];
@@ -111,6 +112,9 @@ type RawForecast = {
     temperature_2m_max: number[];
     temperature_2m_min: number[];
     precipitation_probability_max: (number | null)[];
+    sunrise?: (string | null)[];
+    sunset?: (string | null)[];
+    uv_index_max?: (number | null)[];
   };
 };
 
@@ -124,12 +128,12 @@ export async function fetchForecast(
   url.searchParams.set("longitude", longitude.toFixed(4));
   url.searchParams.set(
     "current",
-    "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m",
+    "temperature_2m,relative_humidity_2m,apparent_temperature,is_day,weather_code,wind_speed_10m,wind_direction_10m,uv_index",
   );
   url.searchParams.set("hourly", "temperature_2m,weather_code,precipitation_probability,is_day");
   url.searchParams.set(
     "daily",
-    "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
+    "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset,uv_index_max",
   );
   url.searchParams.set("timezone", "auto");
   url.searchParams.set("forecast_days", "7");
@@ -154,6 +158,9 @@ export async function fetchForecast(
     max: raw.daily.temperature_2m_max[i] ?? Number.NaN,
     min: raw.daily.temperature_2m_min[i] ?? Number.NaN,
     precipitationProbability: raw.daily.precipitation_probability_max[i] ?? null,
+    sunrise: raw.daily.sunrise?.[i] ?? null,
+    sunset: raw.daily.sunset?.[i] ?? null,
+    uvIndexMax: raw.daily.uv_index_max?.[i] ?? null,
   }));
 
   return {
@@ -167,6 +174,7 @@ export async function fetchForecast(
       windDirection: raw.current.wind_direction_10m,
       weatherCode: raw.current.weather_code,
       isDay: raw.current.is_day === 1,
+      uvIndex: typeof raw.current.uv_index === "number" ? raw.current.uv_index : null,
     },
     hourly,
     daily,
