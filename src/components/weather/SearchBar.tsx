@@ -1,9 +1,10 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MapPin, Search } from "lucide-react";
+import { Loader2, LocateFixed, MapPin, Search } from "lucide-react";
 import { useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { friendlyErrorMessage, placesQueryOptions } from "@/lib/weather/api";
+import { GeolocationError, locateUser } from "@/lib/weather/geolocation";
 import { validateCityQuery } from "@/lib/weather/format";
 import { placeSubtitle } from "@/lib/weather/location";
 import type { Place } from "@/lib/weather/types";
@@ -19,6 +20,7 @@ export function SearchBar({ onSelect, className }: { onSelect: (place: Place) =>
   const [active, setActive] = useState(-1);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(term.trim()), 300);
@@ -70,6 +72,19 @@ export function SearchBar({ onSelect, className }: { onSelect: (place: Place) =>
     }
   }
 
+  async function handleLocate() {
+    setLocating(true);
+    setError(null);
+    setOpen(false);
+    try {
+      choose(await locateUser());
+    } catch (err) {
+      setError(err instanceof GeolocationError ? err.message : "Não foi possível usar sua localização. Tente novamente.");
+    } finally {
+      setLocating(false);
+    }
+  }
+
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (!showList || list.length === 0) return;
     if (e.key === "ArrowDown") {
@@ -114,6 +129,18 @@ export function SearchBar({ onSelect, className }: { onSelect: (place: Place) =>
           onKeyDown={handleKeyDown}
           className="min-w-0 flex-1 bg-transparent py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          onClick={() => void handleLocate()}
+          disabled={locating}
+          aria-label="Usar minha localização atual"
+          title="Usar minha localização atual"
+          className="size-10 shrink-0 rounded-xl text-foreground hover:bg-accent"
+        >
+          {locating ? <Loader2 className="animate-spin" aria-hidden /> : <LocateFixed aria-hidden />}
+        </Button>
         <Button type="submit" disabled={submitting} className="h-10 rounded-xl px-5 font-semibold">
           {submitting ? <Loader2 className="animate-spin" aria-hidden /> : null}
           Buscar

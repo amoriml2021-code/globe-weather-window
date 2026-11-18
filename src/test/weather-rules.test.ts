@@ -61,3 +61,25 @@ describe("starting city and hours", () => {
     expect(compassDirection(270)).toBe("O");
   });
 });
+
+describe("current location", () => {
+  it("uses the city name and keeps exact coordinates", async () => {
+    const { placeFromAddress } = await import("@/lib/weather/geolocation");
+    expect(placeFromAddress({ city: "Campinas", state: "São Paulo", country: "Brasil", country_code: "br" }, -22.9, -47.06)).toEqual({
+      name: "Campinas",
+      admin1: "São Paulo",
+      country: "Brasil",
+      countryCode: "BR",
+      latitude: -22.9,
+      longitude: -47.06,
+    });
+  });
+  it("falls back to Minha localização when the city is unknown", async () => {
+    const { placeFromAddress } = await import("@/lib/weather/geolocation");
+    expect(placeFromAddress(undefined, 1, 2).name).toBe("Minha localização");
+  });
+  it("denied permission explains how to allow it", async () => {
+    const { geolocationErrorMessage } = await import("@/lib/weather/geolocation");
+    expect(geolocationErrorMessage(1)).toContain("Permissão de localização negada");
+  });
+});

@@ -31,7 +31,7 @@ use the editor.
 
 ## Project rules
 
-- Weather data comes straight from Open-Meteo (geocoding + forecast) in the browser via `src/lib/weather/api.ts`; no API key or backend, and never mock data.
+- Weather data comes straight from Open-Meteo (geocoding + forecast) in the browser via `src/lib/weather/api.ts`; no API key or backend, and never mock data. "Use my location" uses browser geolocation plus Nominatim reverse geocoding (`src/lib/weather/geolocation.ts`) only for the city name; if that lookup fails the coordinates are still used.
 - The selected city lives in the `/` URL search params (`lat`, `lon`, `nome`, `regiao`, `pais`) so it survives refresh and can be shared; missing params fall back to `DEFAULT_PLACE`.
 - Search history and favorites are per-browser in localStorage (`src/hooks/use-saved-places.ts`), read in `useEffect` to avoid hydration mismatches.
 - The UI is a single "sky" theme: light text on dynamic gradient backgrounds defined as `--sky-*` tokens in `src/styles.css`, chosen from the WMO weather code in `src/lib/weather/conditions.ts`.
