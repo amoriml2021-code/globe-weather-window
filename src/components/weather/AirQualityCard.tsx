@@ -8,7 +8,7 @@ const TONE_TEXT: Record<AqiTone, string> = {
   moderate: "text-aqi-moderate",
   sensitive: "text-aqi-sensitive",
   bad: "text-aqi-bad",
-  very-bad: "text-aqi-very-bad",
+  "very-bad": "text-aqi-very-bad",
   dangerous: "text-aqi-dangerous",
 };
 
@@ -17,7 +17,7 @@ const TONE_BG: Record<AqiTone, string> = {
   moderate: "bg-aqi-moderate",
   sensitive: "bg-aqi-sensitive",
   bad: "bg-aqi-bad",
-  very-bad: "bg-aqi-very-bad",
+  "very-bad": "bg-aqi-very-bad",
   dangerous: "bg-aqi-dangerous",
 };
 
