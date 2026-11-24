@@ -35,3 +35,4 @@ use the editor.
 - The selected city lives in the `/` URL search params (`lat`, `lon`, `nome`, `regiao`, `pais`) so it survives refresh and can be shared; missing params fall back to `DEFAULT_PLACE`.
 - Search history and favorites are per-browser in localStorage (`src/hooks/use-saved-places.ts`), read in `useEffect` to avoid hydration mismatches.
 - The UI is a single "sky" theme: light text on dynamic gradient backgrounds defined as `--sky-*` tokens in `src/styles.css`, chosen from the WMO weather code in `src/lib/weather/conditions.ts`.
+- UV index, sunrise/sunset come from the same Open-Meteo forecast call; air quality is a separate Open-Meteo Air Quality query so its failure never hides the weather. °C/°F choice is per-browser in localStorage via `src/hooks/use-units.tsx`; the API always returns metric and the UI converts.
